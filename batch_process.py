@@ -14,7 +14,8 @@ def processSubject(path, cellCount):
         # calculate sums/avgs for each relevant column
         branchSum, junctionSum, endpointSum, avgbranchSum = 0,0,0,0
         # ,# Branches,# Junctions,# End-point voxels,# Junction voxels,# Slab voxels,Average Branch Length,# Triple points,# Quadruple points,Maximum Branch Length
-        for id, branches, junctions, endpoint, junk1, junk2, avgbranchLen, junk3, junk4, junk5 in branchtrunc:
+        # for id, branches, junctions, endpoint, junk1, junk2, avgbranchLen, junk3, junk4, junk5 in branchtrunc:
+        for branches, junctions, endpoint, junk1, junk2, avgbranchLen, junk3, junk4, junk5 in branchtrunc:
             branchSum += int(branches)
             junctionSum += int(junctions)
             endpointSum += int(endpoint)
