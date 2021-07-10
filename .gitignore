@@ -4,3 +4,7 @@ venv/
 
 # output
 output.csv
+
+# Ignore data
+PipsqueakAnal/Pipsqueak_data
+SkelAnal/data
