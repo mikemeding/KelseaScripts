@@ -6,5 +6,6 @@ venv/
 output.csv
 
 # Ignore data
-PipsqueakAnal/Pipsqueak_data
+backup/data
+PipsqueakAnal/data
 SkelAnal/data
