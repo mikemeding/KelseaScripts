@@ -2,8 +2,8 @@ import csv
 import os
 import logging
 
-cell_profiler_data_path = '//TRUENAS/public/Documents/Kelsea Science Data/output PND12'
-output_file_name = 'output_PND12-3.csv'
+cell_profiler_data_path = '//TRUENAS/public/Documents/Kelsea Science Data/output LH'
+output_file_name = 'output_LH-2.csv'
 output_path =  '//TRUENAS/public/Documents/Kelsea Science Data/results'
 
 # setup logging
@@ -30,6 +30,8 @@ def extract_metadata(subject_file):
     output_dict['section'] = split_subject[3]
     output_dict['channel'] = split_subject[4].split('.')[0]
     output_dict['subject_name'] = split_subject[1] + '_' + split_subject[2] + '_' + split_subject[3]
+    if output_dict['channel'] not in ['Cells', 'RedCells']:
+        raise ValueError('Channel value error.', output_dict, ' not one of ["Cells", "RedCells"]')
     return output_dict
     
 
@@ -46,49 +48,19 @@ def get_results_data(subject_file_path, subject_metadata):
                 subject_total += 1
             subject_data['total_cells'] = subject_total # just find the total number of rows
         else: # else calculate the puncta
-            if(subject_metadata['channel'] == 'MagentaCells'): # if we have a 'Magenta' file
-                subject_total = 0
-                green_puncta = 0 # ignore zeros
-                green_total = 0
-                magenta_puncta = 0 # do not ignore zeros
-                red_puncta = 0 # ignore zeros
-                red_total = 0
-                for row in subject_reader:
-                    subject_total += 1
-                    magenta_puncta += float(row[3])
-                    if(float(row[2]) > 0):
-                        green_total += 1
-                        green_puncta += float(row[2])
-                    if(float(row[4]) > 0):
-                        red_total += 1
-                        red_puncta += float(row[4])
-                if(subject_total > 0):
-                    magenta_puncta = magenta_puncta/subject_total
-                    if(green_total > 0):
-                        green_puncta = green_puncta/green_total
-                    if(red_total > 0):
-                        red_puncta = red_puncta/red_total
-
-                subject_data[subject_metadata['channel']] = subject_total
-                subject_data[subject_metadata['channel']+'_green_puncta'] = green_puncta
-                subject_data[subject_metadata['channel']+'_green_sum'] = green_total
-                subject_data[subject_metadata['channel']+'_red_puncta'] = red_puncta
-                subject_data[subject_metadata['channel']+'_red_sum'] = red_total
-                subject_data[subject_metadata['channel']+'_puncta'] = magenta_puncta
+            subject_total = 0
+            subject_puncta = 0
+            for row in subject_reader:
+                if(not(len(row)==12)):
+                    logging.error(f'Data row: {row} is incorrectly formatted')
+                subject_total += 1
+                subject_puncta += float(row[2])
+            if(subject_total > 0):
+                subject_puncta = subject_puncta/subject_total # take the average of column 3
             else:
-                subject_total = 0
                 subject_puncta = 0
-                for row in subject_reader:
-                    if(not(len(row)==12)):
-                        logging.error(f'Data row: {row} is incorrectly formatted')
-                    subject_total += 1
-                    subject_puncta += float(row[2])
-                if(subject_total > 0):
-                    subject_puncta = subject_puncta/subject_total # take the average of column 3
-                else:
-                    subject_puncta = 0
-                subject_data[subject_metadata['channel']] = subject_total
-                subject_data[subject_metadata['channel']+'_puncta'] = subject_puncta
+            subject_data[subject_metadata['channel']] = subject_total
+            subject_data[subject_metadata['channel']+'_puncta'] = subject_puncta
         return subject_data
 
 def get_unique_subject_names(list_of_subjects):
@@ -147,7 +119,7 @@ if not os.path.exists(output_path):
     os.makedirs(output_path)
 with open(output_path+'\\'+output_file_name, 'w+', newline='') as write_file:
     logging.info(f'Writing results to file: {output_path}\\{output_file_name}')
-    field_names = ["subject_name","GreenCells","GreenCells_puncta", "MagentaCells","MagentaCells_puncta","MagentaCells_green_puncta","MagentaCells_green_sum","MagentaCells_red_puncta","MagentaCells_red_sum","RedCells","RedCells_puncta", "total_cells"]
+    field_names = ["subject_name","RedCells","RedCells_puncta", "total_cells"]
     writer = csv.DictWriter(write_file, fieldnames=field_names)
     writer.writeheader()
     for subject in final_result_list:
